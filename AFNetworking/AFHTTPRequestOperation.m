@@ -224,20 +224,21 @@ NSString * AFCreateIncompleteDownloadDirectoryPath(void) {
 {
     __weak AFHTTPRequestOperation *weakSelf = self;
     self.completionBlock = ^ {
-        if ([weakSelf isCancelled]) {
+        AFHTTPRequestOperation *strongSelf = weakSelf;
+        if ([strongSelf isCancelled]) {
             return;
         }
         
-        if (weakSelf.error) {
+        if (strongSelf.error) {
             if (failure) {
-                dispatch_async(weakSelf.failureCallbackQueue ? weakSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
-                    failure(weakSelf, weakSelf.error);
+                dispatch_async(strongSelf.failureCallbackQueue ? strongSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
+                    failure(strongSelf, strongSelf.error);
                 });
             }
         } else {
             if (success) {
-                dispatch_async(weakSelf.successCallbackQueue ? weakSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
-                    success(weakSelf, weakSelf.responseData);
+                dispatch_async(strongSelf.successCallbackQueue ? strongSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
+                    success(strongSelf, strongSelf.responseData);
                 });
             }
         }

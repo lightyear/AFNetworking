@@ -199,15 +199,16 @@ static dispatch_queue_t image_request_operation_processing_queue() {
 {
     __weak AFImageRequestOperation *weakSelf = self;
     self.completionBlock = ^ {
-        if ([weakSelf isCancelled]) {
+        AFImageRequestOperation *strongSelf = weakSelf;
+        if ([strongSelf isCancelled]) {
             return;
         }
         
         dispatch_async(image_request_operation_processing_queue(), ^(void) {
-            if (weakSelf.error) {
+            if (strongSelf.error) {
                 if (failure) {
-                    dispatch_async(weakSelf.failureCallbackQueue ? weakSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
-                        failure(weakSelf, weakSelf.error);
+                    dispatch_async(strongSelf.failureCallbackQueue ? strongSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
+                        failure(strongSelf, strongSelf.error);
                     });
                 }
             } else {            
@@ -218,10 +219,10 @@ static dispatch_queue_t image_request_operation_processing_queue() {
                     NSImage *image = nil;
 #endif
 
-                    image = weakSelf.responseImage;
+                    image = strongSelf.responseImage;
 
-                    dispatch_async(weakSelf.successCallbackQueue ? weakSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
-                        success(weakSelf, image);
+                    dispatch_async(strongSelf.successCallbackQueue ? strongSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
+                        success(strongSelf, image);
                     });
                 }
             }

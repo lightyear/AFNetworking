@@ -98,30 +98,31 @@ static dispatch_queue_t json_request_operation_processing_queue() {
 {
     __weak AFJSONRequestOperation *weakSelf = self;
     self.completionBlock = ^ {
-        if ([weakSelf isCancelled]) {
+        AFJSONRequestOperation *strongSelf = weakSelf;
+        if ([strongSelf isCancelled]) {
             return;
         }
         
-        if (weakSelf.error) {
+        if (strongSelf.error) {
             if (failure) {
-                dispatch_async(weakSelf.failureCallbackQueue ? weakSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
-                    failure(weakSelf, weakSelf.error);
+                dispatch_async(strongSelf.failureCallbackQueue ? strongSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
+                    failure(strongSelf, strongSelf.error);
                 });
             }
         } else {
             dispatch_async(json_request_operation_processing_queue(), ^{
-                id JSON = weakSelf.responseJSON;
+                id JSON = strongSelf.responseJSON;
                 
                 if (self.JSONError) {
                     if (failure) {
-                        dispatch_async(weakSelf.failureCallbackQueue ? weakSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
-                            failure(weakSelf, weakSelf.error);
+                        dispatch_async(strongSelf.failureCallbackQueue ? strongSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
+                            failure(strongSelf, strongSelf.error);
                         });
                     }
                 } else {
                     if (success) {
-                        dispatch_async(weakSelf.successCallbackQueue ? weakSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
-                            success(weakSelf, JSON);
+                        dispatch_async(strongSelf.successCallbackQueue ? strongSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
+                            success(strongSelf, JSON);
                         });
                     }                    
                 }

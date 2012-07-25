@@ -108,30 +108,31 @@ static dispatch_queue_t property_list_request_operation_processing_queue() {
 {
     __weak AFPropertyListRequestOperation *weakSelf = self;
     self.completionBlock = ^ {
-        if ([weakSelf isCancelled]) {
+        AFPropertyListRequestOperation *strongSelf = weakSelf;
+        if ([strongSelf isCancelled]) {
             return;
         }
         
-        if (weakSelf.error) {
+        if (strongSelf.error) {
             if (failure) {
-                dispatch_async(weakSelf.failureCallbackQueue ? weakSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
-                    failure(weakSelf, weakSelf.error);
+                dispatch_async(strongSelf.failureCallbackQueue ? strongSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
+                    failure(strongSelf, strongSelf.error);
                 });
             }
         } else {
             dispatch_async(property_list_request_operation_processing_queue(), ^(void) {
-                id propertyList = weakSelf.responsePropertyList;
+                id propertyList = strongSelf.responsePropertyList;
                 
                 if (self.propertyListError) {
                     if (failure) {
-                        dispatch_async(weakSelf.failureCallbackQueue ? weakSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
-                            failure(weakSelf, weakSelf.error);
+                        dispatch_async(strongSelf.failureCallbackQueue ? strongSelf.failureCallbackQueue : dispatch_get_main_queue(), ^{
+                            failure(strongSelf, strongSelf.error);
                         });
                     }
                 } else {
                     if (success) {
-                        dispatch_async(weakSelf.successCallbackQueue ? weakSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
-                            success(weakSelf, propertyList);
+                        dispatch_async(strongSelf.successCallbackQueue ? strongSelf.successCallbackQueue : dispatch_get_main_queue(), ^{
+                            success(strongSelf, propertyList);
                         });
                     } 
                 }
