@@ -54,9 +54,13 @@ NSSet * AFContentTypesFromHTTPHeader(NSString *string) {
     return [NSSet setWithSet:mutableContentTypes];
 }
 
-static void AFSwizzleClassMethodWithClassAndSelectorUsingBlock(Class klass, SEL selector, void *block) {
+static void AFSwizzleClassMethodWithClassAndSelectorUsingBlock(Class klass, SEL selector, id block) {
     Method originalMethod = class_getClassMethod(klass, selector);
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 60000
     IMP implementation = imp_implementationWithBlock(block);
+#else
+    IMP implementation = imp_implementationWithBlock((__bridge void *)block);
+#endif
     class_replaceMethod(objc_getMetaClass([NSStringFromClass(klass) UTF8String]), selector, implementation, method_getTypeEncoding(originalMethod));
 }
 
@@ -265,7 +269,7 @@ NSString * AFCreateIncompleteDownloadDirectoryPath(void) {
 + (void)addAcceptableStatusCodes:(NSIndexSet *)statusCodes {
     NSMutableIndexSet *mutableStatusCodes = [[NSMutableIndexSet alloc] initWithIndexSet:[self acceptableStatusCodes]];
     [mutableStatusCodes addIndexes:statusCodes];
-    AFSwizzleClassMethodWithClassAndSelectorUsingBlock([self class], @selector(acceptableStatusCodes), (__bridge void *)^(id _self) {
+    AFSwizzleClassMethodWithClassAndSelectorUsingBlock([self class], @selector(acceptableStatusCodes), ^(id _self) {
         return mutableStatusCodes;
     });
 }
@@ -277,7 +281,7 @@ NSString * AFCreateIncompleteDownloadDirectoryPath(void) {
 + (void)addAcceptableContentTypes:(NSSet *)contentTypes {
     NSMutableSet *mutableContentTypes = [[NSMutableSet alloc] initWithSet:[self acceptableContentTypes] copyItems:YES];
     [mutableContentTypes unionSet:contentTypes];
-    AFSwizzleClassMethodWithClassAndSelectorUsingBlock([self class], @selector(acceptableContentTypes), (__bridge void *)^(id _self) {
+    AFSwizzleClassMethodWithClassAndSelectorUsingBlock([self class], @selector(acceptableContentTypes), ^(id _self) {
         return mutableContentTypes;
     });
 }
